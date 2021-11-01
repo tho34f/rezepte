@@ -4,7 +4,8 @@ Created on Wed Apr 21 07:01:38 2021
 
 @author: thorb
 """
-from tkinter import Label, LabelFrame, Entry, Button, Menu, END
+from tkinter import Label, LabelFrame, Entry, Menu
+import dropbox
 from PIL import ImageTk, Image
 import Konstanten
 
@@ -14,6 +15,7 @@ class GUI:
     def __init__(self, master, title):
         self.master = master
         master.title(title)
+        self.db = dropbox.Dropbox(Konstanten.droboauth)
         # BenötigteFotos
         master.iconbitmap(Konstanten.favIcon)
         self.my_image = ImageTk.PhotoImage(Image.open(Konstanten.rezeptIcon))
@@ -28,6 +30,7 @@ class GUI:
         self.frameAccountInformation = LabelFrame(master, text="Account-Informationen", padx=10, pady=10)
         # Ein Eingabefeld zur Eingabe einer Kategorie bzw. eines Rezeptnamens erstellen
         self.rezeptNameInput = Entry(self.frameSelectionRezepte, width=75, borderwidth=10)
+        self.rezeptNameInputUpload = Entry(self.frameUploadRezepte, width=75, borderwidth=10)
         self.kategorieNameInput = Entry(self.frameSelectionKategorie, width=75, borderwidth=10)
         # Labels
         self.selectionLabelKategorie = Label(self.frameSelectionKategorie, text=Konstanten.opiningLabel)

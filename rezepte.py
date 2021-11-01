@@ -5,13 +5,9 @@ Created on Sat Feb 27 08:24:14 2021
 @author: thorb
 """
 import getpass
-from tkinter import Tk, Label, Button, END
-import dropbox
-import Konstanten
+from tkinter import Tk, Label, Button, END, filedialog
 import GuiRezepte
 import RezepteService
-
-db = dropbox.Dropbox(Konstanten.droboauth)
 
 # Ein Fenster und Den Fenstertitle erstellen
 fenster = Tk()
@@ -24,6 +20,8 @@ rezepte_gui.frameSelectionKategorie.pack(padx=10, pady=10)
 
 def show_rezept_input():
     """ Rezept-Eingabe anzeigen """
+    rezepte_gui.frameAccountInformation.pack_forget()
+    rezepte_gui.frameUploadRezepte.pack_forget()
     kategorieExists = RezepteService.check_kategorie(rezepte_gui)
     if kategorieExists:
         rezepte_gui.frameInformationNotFound.pack_forget()
@@ -48,12 +46,17 @@ def choose_new_categorie():
 
 def show_upload_input():
     """ Upload-Input anzeigen """
+    rezepte_gui.frameAccountInformation.pack_forget()
+    rezepte_gui.frameSelectionRezepte.pack_forget()
+    rezepte_gui.frameInformationNotFound.pack_forget()
+    rezepte_gui.frameInformationFound.pack_forget()
     kategorieExists = RezepteService.check_kategorie(rezepte_gui)
     if kategorieExists:
         rezepte_gui.frameUploadRezepte.pack()
         rezepte_gui.uploadLabelRezept.grid(row=5, column=0, columnspan=10, padx=100)
-        rezepte_gui.rezeptNameInput.grid(row=6, column=0, columnspan=10, padx=100)
-        confirmButtonRezeptUpload.grid(row=7, column=3, padx=25)
+        rezepte_gui.rezeptNameInputUpload.grid(row=6, column=0, columnspan=10, padx=100)
+        confirmButtonRezeptUpload.grid(row=7, column=4, padx=25)
+        chooseButtonRezeptUpload.grid(row=7, column=3, padx=25)
     else:
         rezepte_gui.frameInformationNotFound.pack(padx=10, pady=10)
         rezepte_gui.selectionLabelKategorieNotFound.grid(row=5, column=0, columnspan=10, padx=100)
@@ -67,11 +70,10 @@ def suche():
     dropboxPath = "/" + kategorieName + "/" + rezeptName + ".pdf"
     downloadPath = "C:/Users/" + getpass.getuser() + "/Documents/" + rezeptName + ".pdf"
     isFileExisting = exists_file(dropboxPath)
-    information_find_label = Label(rezepte_gui.frameInformationFound, text="Die Datei " + rezeptName + " wurde erfolgreich heruntergeladen. \n Diese kann unter "
-                                    + downloadPath + " gefunden werden.")
+    information_find_label = Label(rezepte_gui.frameInformationFound, text="Die Datei " + rezeptName + " wurde erfolgreich heruntergeladen. \n Diese kann unter " + downloadPath + " gefunden werden.")
     information_not_find_label = Label(rezepte_gui.frameInformationNotFound, text="Die Datei " + rezeptName + " wurde nicht gefunden. \n Bitte geben Sie einen Dateinamen ein.")
     if isFileExisting:
-        db.files_download_to_file(downloadPath, dropboxPath)
+        rezepte_gui.db.files_download_to_file(downloadPath, dropboxPath)
         rezepte_gui.rezeptNameInput.delete(0, END)
         rezepte_gui.frameInformationNotFound.pack_forget()
         rezepte_gui.frameInformationFound.pack(padx=10, pady=10)
@@ -86,21 +88,28 @@ def suche():
         information_not_find_label.grid(row=8, column=0, columnspan=10, padx=100)
 
 
+def choose_rezept_upload():
+    """ Rezept-Datei für upload auswählen"""
+    sourceDir = filedialog.askopenfilename()
+    rezepte_gui.rezeptNameInputUpload.insert(1, sourceDir)
+
+
 def upload():
-    """ upload """
-    kategorieExists = RezepteService.check_kategorie(rezepte_gui)
-    rezeptName = rezepte_gui.rezeptNameInput.get()
-    if kategorieExists:
-        rezeptName
-    else:
-        rezeptName
+    """ upload einer rezept datei"""
+    kategorieName = rezepte_gui.kategorieNameInput.get()
+    rezeptName = rezepte_gui.rezeptNameInputUpload.get()
+    sourceDirsplitted = rezeptName.split("/")
+    lastIndex = len(sourceDirsplitted)
+    dropboxPath = "/" + kategorieName + "/" + sourceDirsplitted[lastIndex - 1]
+    with open(rezeptName, 'rb') as f:
+        rezepte_gui.db.files_upload(f.read(), dropboxPath)
 
 
 # Funktion, die prüft, ob ein File in der Dropbox vorhanden ist
 def exists_file(file_name):
     """ Prüft, ob Pfad existiert"""
     try:
-        db.files_get_metadata(file_name)
+        rezepte_gui.db.files_get_metadata(file_name)
         return True
     except Exception:
         return False
@@ -109,9 +118,12 @@ def exists_file(file_name):
 # Funktion, die die Account-Informationen ausgibt
 def show_information():
     """ Zeigt Account Informationen """
+    rezepte_gui.frameSelectionRezepte.pack_forget()
+    rezepte_gui.frameInformationNotFound.pack_forget()
+    rezepte_gui.frameInformationFound.pack_forget()
+    rezepte_gui.frameUploadRezepte.pack_forget()
     rezepte_gui.frameAccountInformation.pack(padx=10, pady=10)
-    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + db.users_get_current_account().__getattribute__("name").__str__() + "\n"
-                                   + db.users_get_current_account().__getattribute__("email").__str__())
+    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + rezepte_gui.db.users_get_current_account().__getattribute__("name").__str__() + "\n" + rezepte_gui.db.users_get_current_account().__getattribute__("email").__str__())
     account_information_label.grid(row=9, column=0, columnspan=10, padx=100)
 
 
@@ -128,7 +140,8 @@ rezepte_gui.selectionLabelKategorie.grid(row=0, column=0, columnspan=10, padx=10
 confirmButtonKategorie = Button(rezepte_gui.frameSelectionKategorie, text="Suche Kategorie starten", command=show_rezept_input)
 confirmButtonKategorie .grid(row=4, column=3, padx=25)
 confirmButtonRezept = Button(rezepte_gui.frameSelectionRezepte, text="Suche Rezept Starten", command=suche)
-confirmButtonRezeptUpload = Button(rezepte_gui.frameSelectionRezepte, text="Upload Rezept Starten", command=upload)
+confirmButtonRezeptUpload = Button(rezepte_gui.frameUploadRezepte, text="Upload Rezept Starten", command=upload)
+chooseButtonRezeptUpload = Button(rezepte_gui.frameUploadRezepte, text="Ein Rezept auswählen", command=choose_rezept_upload)
 newCategorieButton = Button(rezepte_gui.frameSelectionRezepte, text="Neue Kategorie eingeben", command=choose_new_categorie)
 # Button für die Account-Informationen
 accountButton = Button(rezepte_gui.frameSelectionKategorie, text="Informationen anzeigen", command=show_information)
