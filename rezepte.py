@@ -7,7 +7,11 @@ Created on Sat Feb 27 08:24:14 2021
 import getpass
 from tkinter import Tk, Label, Button, END, filedialog
 import GuiRezepte
+import dropbox
 import RezepteService
+import Konstanten
+
+db = dropbox.Dropbox(Konstanten.droboauth)
 
 # Ein Fenster und Den Fenstertitle erstellen
 fenster = Tk()
@@ -73,7 +77,7 @@ def suche():
     information_find_label = Label(rezepte_gui.frameInformationFound, text="Die Datei " + rezeptName + " wurde erfolgreich heruntergeladen. \n Diese kann unter " + downloadPath + " gefunden werden.")
     information_not_find_label = Label(rezepte_gui.frameInformationNotFound, text="Die Datei " + rezeptName + " wurde nicht gefunden. \n Bitte geben Sie einen Dateinamen ein.")
     if isFileExisting:
-        rezepte_gui.db.files_download_to_file(downloadPath, dropboxPath)
+        db.files_download_to_file(downloadPath, dropboxPath)
         rezepte_gui.rezeptNameInput.delete(0, END)
         rezepte_gui.frameInformationNotFound.pack_forget()
         rezepte_gui.frameInformationFound.pack(padx=10, pady=10)
@@ -102,14 +106,14 @@ def upload():
     lastIndex = len(sourceDirsplitted)
     dropboxPath = "/" + kategorieName + "/" + sourceDirsplitted[lastIndex - 1]
     with open(rezeptName, 'rb') as f:
-        rezepte_gui.db.files_upload(f.read(), dropboxPath)
+        db.files_upload(f.read(), dropboxPath)
 
 
 # Funktion, die prüft, ob ein File in der Dropbox vorhanden ist
 def exists_file(file_name):
     """ Prüft, ob Pfad existiert"""
     try:
-        rezepte_gui.db.files_get_metadata(file_name)
+        db.files_get_metadata(file_name)
         return True
     except Exception:
         return False
@@ -123,7 +127,7 @@ def show_information():
     rezepte_gui.frameInformationFound.pack_forget()
     rezepte_gui.frameUploadRezepte.pack_forget()
     rezepte_gui.frameAccountInformation.pack(padx=10, pady=10)
-    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + rezepte_gui.db.users_get_current_account().__getattribute__("name").__str__() + "\n" + rezepte_gui.db.users_get_current_account().__getattribute__("email").__str__())
+    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + db.users_get_current_account().__getattribute__("name").__str__() + "\n" + rezepte_gui.db.users_get_current_account().__getattribute__("email").__str__())
     account_information_label.grid(row=9, column=0, columnspan=10, padx=100)
 
 
