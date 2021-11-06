@@ -5,7 +5,6 @@ Created on Wed Apr 21 07:01:38 2021
 @author: thorb
 """
 from tkinter import Label, LabelFrame, Entry, Menu
-import dropbox
 from PIL import ImageTk, Image
 import Konstanten
 
@@ -15,7 +14,6 @@ class GUI:
     def __init__(self, master, title):
         self.master = master
         master.title(title)
-        self.db = dropbox.Dropbox(Konstanten.droboauth)
         # BenötigteFotos
         master.iconbitmap(Konstanten.favIcon)
         self.my_image = ImageTk.PhotoImage(Image.open(Konstanten.rezeptIcon))
