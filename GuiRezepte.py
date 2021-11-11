@@ -11,7 +11,7 @@ import Konstanten
 
 class GUI:
 
-    def __init__(self, master, title):
+    def __init__(self, master, title, openingLabel):
         self.master = master
         master.title(title)
         # BenötigteFotos
@@ -31,7 +31,7 @@ class GUI:
         self.rezeptNameInputUpload = Entry(self.frameUploadRezepte, width=75, borderwidth=10)
         self.kategorieNameInput = Entry(self.frameSelectionKategorie, width=75, borderwidth=10)
         # Labels
-        self.selectionLabelKategorie = Label(self.frameSelectionKategorie, text=Konstanten.opiningLabel)
+        self.selectionLabelKategorie = Label(self.frameSelectionKategorie, text=openingLabel)
         self.selectionLabelKategorieNotFound = Label(self.frameInformationNotFound, text=Konstanten.categorieNotFound)
         self.selectionLabelRezept = Label(self.frameSelectionRezepte, text=Konstanten.searchRezept)
         self.uploadLabelRezept = Label(self.frameUploadRezepte, text=Konstanten.uploadRezept)

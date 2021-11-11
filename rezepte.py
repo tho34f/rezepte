@@ -12,10 +12,21 @@ import RezepteService
 import Konstanten
 
 db = dropbox.Dropbox(Konstanten.droboauth)
+RezepteService.fillKategorie(db)
+
+# Texte für Labels
+opening = Konstanten.openingLabel
+numberOfKategorien = RezepteService.kategorien.__len__() - 2
+for i in range(0, numberOfKategorien):
+    name = RezepteService.kategorien.__getitem__(i)
+    i = i + 1
+    opening = opening + " " + str(i) + ") " + name
+    if i % 5 == 0:
+        opening = opening + "\n "
 
 # Ein Fenster und Den Fenstertitle erstellen
 fenster = Tk()
-rezepte_gui = GuiRezepte.GUI(fenster, "Rezepte")
+rezepte_gui = GuiRezepte.GUI(fenster, "Rezepte", opening)
 rezepte_gui.my_label_image.place(x=0, y=0, relwidth=1, relheight=1)
 
 # Main-Frame anzeigen
@@ -127,7 +138,7 @@ def show_information():
     rezepte_gui.frameInformationFound.pack_forget()
     rezepte_gui.frameUploadRezepte.pack_forget()
     rezepte_gui.frameAccountInformation.pack(padx=10, pady=10)
-    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + db.users_get_current_account().__getattribute__("name").__str__() + "\n" + rezepte_gui.db.users_get_current_account().__getattribute__("email").__str__())
+    account_information_label = Label(rezepte_gui.frameAccountInformation, text="Account infos: " + db.users_get_current_account().__getattribute__("name").__str__() + "\n" + db.users_get_current_account().__getattribute__("email").__str__())
     account_information_label.grid(row=9, column=0, columnspan=10, padx=100)
 
 
